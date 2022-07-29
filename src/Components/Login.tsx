@@ -6,10 +6,13 @@ import { ToastContainer, toast, Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
 import { RouteComponentProps } from "react-router";
 import "./home.css";
-
+import logo from "../public/logo.png"
 
 type SomeComponentProps = RouteComponentProps;
 const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
+  const navigatehome = () =>{
+    history.push("/")
+  }
   const {
     register,
     handleSubmit,
@@ -66,11 +69,11 @@ const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
       <div className="container">
         
       <div>
-        <button>Home</button>
+        <button onClick={navigatehome} className="logo"><img  src={logo} alt="fireSpot"/> <h4>Flashcards</h4> </button>
       </div>
         <div
           className="row d-flex justify-content-center align-items-center"
-          style={{ height: "80vh" }}
+          style={{ height: "50vh" }}
         >
           <div className="card mb-3 rounded-0" style={{ maxWidth: "320px" }}>
             <div className="col-md-12">

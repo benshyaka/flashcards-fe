@@ -1,63 +1,89 @@
 import React, { FC } from "react";
-import { Link, RouteComponentProps} from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import axios from "axios";
 import { ToastContainer, toast, Flip } from "react-toastify";
 import "react-toastify/dist/ReactToastify.min.css";
+import { RouteComponentProps } from "react-router";
 import "./home.css";
 import logo from "../public/logo.png"
 
-
 type SomeComponentProps = RouteComponentProps;
-const SignUp: FC<SomeComponentProps> = ({ history }) => {
+const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
+  const options = [
+    {
+      label: "ICT",
+      value: "ICT",
+    },
+    {
+      label: "PROGRAMMING",
+      value: "PROGRAMMING",
+    },
+    {
+      label: "GEOGRAPHY",
+      value: "GEOGRAPHY",
+    },
+  ];
   const navigatehome = () =>{
     history.push("/")
   }
   const {
     register,
     handleSubmit,
-    watch,
-    reset,
     formState: { errors },
   } = useForm();
-  const submitData = (data: any) => {
+
+  const login = (data: any) => {
     let params = {
-      firstname: data.firstname,
-      lastname: data.lastname,
       email: data.email,
       password: data.password,
-      confirmpassword: data.cpassword,
     };
-    console.log(data);
     axios
-      .post("http://localhost:4000/api/signup", params)
+      .post("https://flashcards-back-end.herokuapp.com/api", params)
       .then(function (response) {
-        toast.success(response.data.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: false,
-          progress: 0,
-          toastId: "my_toast",
-        });
-        reset();
-        setTimeout(() => {
-          history.push("/login");
-        }, 3000);
+        //   IF EMAIL ALREADY EXISTS
+        if (response.data.success === false) {
+          toast.error(response.data.error, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: false,
+            progress: 0,
+            toastId: "my_toast",
+          });
+        } else {
+          toast.success(response.data.message, {
+            position: "top-right",
+            autoClose: 3000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: false,
+            progress: 0,
+            toastId: "my_toast",
+          });
+          localStorage.setItem("auth", response.data.token);
+          setTimeout(() => {
+            history.push("/");
+          }, 3000);
+        }
       })
 
       .catch(function (error) {
         console.log(error);
       });
   };
+
+  const notify = () => toast("Wow so easy!");
+  
   return (
     <>
       <div className="container">
         <div
           className="row d-flex justify-content-center align-items-center"
-          style={{ height: "100vh" }}
+          style={{ height: "70vh" }}
 
         >
           <div>
@@ -67,16 +93,15 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
             <div className="col-md-12">
               <div className="card-body">
                 <h3 className="card-title text-center text-secondary mt-3 mb-3">
-                  Register here
+                  Add new card
                 </h3>
                 <form
                   className="row"
                   autoComplete="off"
-                  onSubmit={handleSubmit(submitData)}
                 >
                   <div className="col-md-6">
                     <div className="">
-                      <label className="form-label">Firstname</label>
+                      <label className="form-label">Name</label>
                       <input
                         type="text"
                         className="form-control form-control-sm rounded-0"
@@ -93,26 +118,19 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                   </div>
                   <div className="col-md-6">
                     <div className="">
-                      <label className="form-label">Lastname</label>
-                      <input
-                        type="text"
-                        className="form-control form-control-sm  rounded-0"
-                        id="exampleFormControlInput2"
-                        {...register("lastname", {
-                          required: "Lastname is required!",
-                        })}
-                      />
-                      {errors.lastname && (
-                        <p className="text-danger" style={{ fontSize: 14 }}>
-                        </p>
-                      )}
+                      <label className="form-label">Category</label>
+                      <select className="form-control form-control-sm  rounded-0">
+            {options.map((option) => (
+              <option value={option.value}>{option.label}</option>
+            ))}
+          </select>
                     </div>
                   </div>
 
                   <div className="">
-                    <label className="form-label">Email</label>
+                    <label className="form-label">Question</label>
                     <input
-                      type="email"
+                      type="text"
                       className="form-control form-control-sm  rounded-0"
                       id="exampleFormControlInput3"
                       {...register("email", { required: "Email is required!" })}
@@ -123,9 +141,9 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                     )}
                   </div>
                   <div className="">
-                    <label className="form-label">Password</label>
+                    <label className="form-label">Answer</label>
                     <input
-                      type="password"
+                      type="text"
                       className="form-control form-control-sm rounded-0"
                       id="exampleFormControlInput5"
                       {...register("password", {
@@ -137,38 +155,13 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                       </p>
                     )}
                   </div>
-                  <div>
-                    <label className="form-label">Confirm Password</label>
-                    <input
-                      type="password"
-                      className="form-control form-control-sm  rounded-0"
-                      id="exampleFormControlInput6"
-                      {...register("cpassword", {
-                        required: "Confirm Password is required",
-
-                        validate: (value) =>
-                          value === watch("password") ||
-                          "Passwords don't match.",
-                      })}
-                    />
-                    {errors.cpassword && (
-                      <p className="text-danger" style={{ fontSize: 14 }}>
-                      </p>
-                    )}
-                  </div>
                   <div className="text-center mt-4 ">
                     <button
                       className="btn btn-primary text-center w-100 shadow-none mb-3  rounded-0"
                       type="submit"
                     >
-                      Register
+                      Save
                     </button>
-                    <p className="card-text">
-                      Already have an account?{" "}
-                      <Link style={{ textDecoration: "none" }} to={"/login"}>
-                        Log In
-                      </Link>
-                    </p>
                   </div>
                 </form>
               </div>
@@ -205,5 +198,4 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
     </>
   );
 };
-
-export default SignUp;
+export default Login;
