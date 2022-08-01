@@ -20,32 +20,44 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
     reset,
     formState: { errors },
   } = useForm();
-  const submitData = (data: any) => {
-    let params = {
-      firstname: data.firstname,
-      lastname: data.lastname,
-      email: data.email,
-      password: data.password,
-      confirmpassword: data.cpassword,
-    };
-    console.log(data);
-    axios
-      .post("http://localhost:4000/api/signup", params)
+  const submitData = async (data: any) => {
+    const {firstname, surname, email, password } = data
+
+    const querydata = { 
+      query: `mutation{
+        Postsignup(firstname: "${firstname}", surname: "${surname}",email: "${email}", password: "${password}") {
+          token
+          user {
+            id
+            firstname
+            surname
+            email
+            password
+            createdAt
+          }
+        }
+      }`,
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }
+    await axios
+      .post("https://flashcards-back-end.herokuapp.com/api", querydata)
       .then(function (response) {
-        toast.success(response.data.message, {
-          position: "top-right",
-          autoClose: 3000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: false,
-          progress: 0,
-          toastId: "my_toast",
-        });
-        reset();
-        setTimeout(() => {
-          history.push("/login");
-        }, 3000);
+        console.log(response)
+        if (response.data.data.Postsignup == null) {
+          toast.error("User with the same email exist")
+
+        } else if(response.data.error){
+          toast.error("An error occured "+ response.data.error)
+        }
+         else {
+          toast.success("wellcome "+response.data.data.Postsignup.user.firstname)
+          localStorage.setItem("auth", response.data.data.Postsignup.token);
+          setTimeout(() => {
+            history.push("/dashboard");
+          }, 3000);
+        }
       })
 
       .catch(function (error) {
@@ -87,13 +99,14 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                       />
                       {errors.firstname && (
                         <p className="text-danger" style={{ fontSize: 14 }}>
+                          Firstname is required!
                         </p>
                       )}
                     </div>
                   </div>
                   <div className="col-md-6">
                     <div className="">
-                      <label className="form-label">Lastname</label>
+                      <label className="form-label">Surname</label>
                       <input
                         type="text"
                         className="form-control form-control-sm  rounded-0"
@@ -104,6 +117,7 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                       />
                       {errors.lastname && (
                         <p className="text-danger" style={{ fontSize: 14 }}>
+                          Surname is required!
                         </p>
                       )}
                     </div>
@@ -119,6 +133,7 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                     />
                     {errors.email && (
                       <p className="text-danger" style={{ fontSize: 14 }}>
+                        Email is required!
                       </p>
                     )}
                   </div>
@@ -134,6 +149,7 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                     />
                     {errors.password && (
                       <p className="text-danger" style={{ fontSize: 14 }}>
+                        Password is required!
                       </p>
                     )}
                   </div>
@@ -153,6 +169,7 @@ const SignUp: FC<SomeComponentProps> = ({ history }) => {
                     />
                     {errors.cpassword && (
                       <p className="text-danger" style={{ fontSize: 14 }}>
+                        Confirm Password is required
                       </p>
                     )}
                   </div>

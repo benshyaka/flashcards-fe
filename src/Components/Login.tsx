@@ -19,40 +19,48 @@ const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
     formState: { errors },
   } = useForm();
 
-  const login = (data: any) => {
-    let params = {
+  const login = async (data: any) => {
+
+    // data.preventDefault();
+
+    // const email = data.target.element.
+
+    const email = data.email
+    const password = data.password
+    const querydata = { 
+    query: `mutation{
+      Postlogin(email: "${email}", password: "${password}") {
+        token
+        user {
+          id
+          firstname
+          surname
+          email
+          password
+          createdAt
+        }
+      }
+    }`,
+    variables: {
       email: data.email,
       password: data.password,
-    };
-    axios
-      .post("https://flashcards-back-end.herokuapp.com/api", params)
+    },
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+
+    await axios
+      .post("https://flashcards-back-end.herokuapp.com/api", querydata)
       .then(function (response) {
         //   IF EMAIL ALREADY EXISTS
-        if (response.data.success === false) {
-          toast.error(response.data.error, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: false,
-            progress: 0,
-            toastId: "my_toast",
-          });
+        if (response.data.data.Postlogin == null) {
+          toast.error("Incorrect username or password")
         } else {
-          toast.success(response.data.message, {
-            position: "top-right",
-            autoClose: 3000,
-            hideProgressBar: true,
-            closeOnClick: true,
-            pauseOnHover: true,
-            draggable: false,
-            progress: 0,
-            toastId: "my_toast",
-          });
-          localStorage.setItem("auth", response.data.token);
+          toast.success("wellcome "+response.data.data.Postlogin.user.firstname)
+          localStorage.setItem("auth", response.data.data.Postlogin.token);
           setTimeout(() => {
-            history.push("/");
+            history.push("/dashboard");
           }, 3000);
         }
       })
@@ -92,6 +100,7 @@ const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
                     />
                     {errors.email && (
                       <p className="text-danger" style={{ fontSize: 14 }}>
+                        Email is required
                       </p>
                     )}
                   </div>
@@ -107,6 +116,7 @@ const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
                     />
                     {errors.password && (
                       <p className="text-danger" style={{ fontSize: 14 }}>
+                        Password is required!
                       </p>
                     )}
                   </div>
@@ -148,14 +158,10 @@ const Login: FC<SomeComponentProps> = ({ history }): JSX.Element => {
       <ToastContainer
         position="top-right"
         autoClose={5000}
-        hideProgressBar
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss={false}
-        draggable={false}
         pauseOnHover
         limit={1}
-        transition={Flip}
+        className = 'foo-bar'
+        style={{width: "350px"}}
       />
     </>
   );
